@@ -1,0 +1,471 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Guess The Password – 20 Questions</title>
+  <style>
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial; margin:0; background:#0b1220; color:#e8eefc;}
+    .wrap{max-width:780px; margin:0 auto; padding:18px;}
+    .card{background:#121c33; border:1px solid #223154; border-radius:16px; padding:16px; margin:12px 0;}
+    .h1{font-size:22px; font-weight:900; margin:0 0 6px}
+    .h2{font-size:16px; font-weight:800; margin:0 0 6px}
+    .muted{opacity:.8}
+    .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+    input{flex:1; min-width:220px; padding:12px; border-radius:12px; border:1px solid #2a3b66; background:#0b1220; color:#e8eefc; font-size:16px}
+    button{padding:12px 14px; border-radius:12px; border:0; background:#2b6cff; color:white; font-weight:800; font-size:16px; cursor:pointer}
+    button:disabled{opacity:.55; cursor:not-allowed}
+    .badge{display:inline-block; padding:6px 10px; border-radius:999px; background:#0b1220; border:1px solid #2a3b66; font-size:13px}
+    .ok{background:#0c2a16; border:1px solid #1f7a43}
+    .bad{background:#2a1111; border:1px solid #b13a3a}
+    .warn{background:#2a250f; border:1px solid #caa43a}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
+    .bigwin{font-size:28px; font-weight:1000}
+    .code{font-size:18px; padding:10px; border-radius:12px; background:#0b1220; border:1px dashed #2a3b66; display:inline-block}
+    .clues{white-space:pre-wrap; line-height:1.35}
+    .progress{height:10px; border-radius:999px; background:#0b1220; border:1px solid #2a3b66; overflow:hidden}
+    .bar{height:100%; width:0%}
+    .small{font-size:12px; opacity:.75}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <div class="h1">🔐 Guess The Password – Speed (20 Questions)</div>
+    <div class="muted">Essais illimités • Indice après 15s • Passage auto après 2 min • Validation au stand</div>
+    <div class="row" style="margin-top:10px">
+      <span class="badge" id="qBadge">Question …/20</span>
+      <span class="badge" id="timerBadge">⏳ 02:00</span>
+      <span class="badge" id="clockBadge">🕒 …</span>
+      <span class="badge mono">FORMAT: mot_minuscule_nombre!</span>
+    </div>
+  </div>
+
+  <div class="card" id="lockCard">
+    <div class="h2">⏱️ Début officiel à 14:00</div>
+    <div class="muted">Le jeu s’ouvre automatiquement à 14:00 (heure locale du joueur).</div>
+    <div style="margin-top:8px" class="badge" id="countdown">Calcul…</div>
+    <div class="small" style="margin-top:10px">
+      Format du mot de passe (toujours le même) : <span class="mono">mot_minuscule_nombre!</span><br/>
+      Exemple : <span class="mono">atlas_4!</span>
+    </div>
+  </div>
+
+  <div class="card" id="gameCard" style="display:none">
+    <div class="h2">📄 Énigme / Dossier</div>
+    <div class="clues" id="prompt"></div>
+
+    <div style="margin-top:10px" class="progress"><div class="bar" id="bar"></div></div>
+
+    <div class="row" style="margin-top:10px">
+      <input id="pw" placeholder="Ex: atlas_4!" autocomplete="off"/>
+      <button id="btn">TESTER</button>
+      <button id="skipBtn" style="background:#44506b">PASSER</button>
+    </div>
+
+    <div style="margin-top:10px" id="msg" class="badge muted">Essais illimités. Sois rapide.</div>
+    <div style="margin-top:10px; display:none" id="hintBox" class="badge warn">💡 Indice : <span id="hintText"></span></div>
+
+    <div class="small" style="margin-top:10px">
+      ✅ Si tu gagnes : montre l’écran WIN + le code au stand.
+    </div>
+  </div>
+
+  <div class="card" id="winCard" style="display:none">
+    <div class="bigwin">✅ ACCESS GRANTED</div>
+    <div class="muted" style="margin-top:6px">Va vite au stand et montre ce code :</div>
+    <div style="margin-top:10px" class="code mono" id="winCode">—</div>
+    <div style="margin-top:12px" class="badge ok">Validé sur ce téléphone ✅</div>
+  </div>
+
+  <div class="card">
+    <div class="h2">📌 Règles</div>
+    <div class="muted">
+      • 20 questions (niveau ↑) • 1 indice après 15 sec • après 2 min on passe • le premier qui valide au stand gagne.<br/>
+      • Format unique : <span class="mono">mot_minuscule_nombre!</span> (mot sans espaces, en minuscule).
+    </div>
+  </div>
+</div>
+
+<script>
+  // =========================
+  // RÉGLAGES TEMPS
+  // =========================
+  const START_HOUR = 14, START_MIN = 0;     // 14:00
+  const HINT_AFTER_MS = 15_000;             // 15 sec
+  const AUTO_SKIP_MS  = 120_000;            // 2 min
+  const TICK_MS = 100;
+
+  // =========================
+  // QUESTIONS (20) – mélange devinettes + dossiers
+  // Format MOT DE PASSE (toujours) : mot_minuscule_nombre!
+  // =========================
+  const QUESTIONS = [
+    {
+      prompt:
+`Niveau 1 — Devinette
+Je suis le compagnon du soleil et de la lune (on me voit la nuit).
+MOT = réponse (minuscule)
+NOMBRE = nombre de lettres du mot
+FORMAT: mot_nombre! (ex: atlas_4!)`,
+      hint: `Le mot est "etoile" (pense à la nuit)`,
+      answer: `etoile_6!`
+    },
+    {
+      prompt:
+`Niveau 2 — Mini dossier (étudiant)
+Prénom: Lina
+Elle aime le chocolat.
+MOT = ce qu’elle aime (en minuscule, sans accents)
+NOMBRE = 2 (juste parce qu’elle prend 2 carrés 😄)
+FORMAT: mot_nombre!`,
+      hint: `MOT = chocolat`,
+      answer: `chocolat_2!`
+    },
+    {
+      prompt:
+`Niveau 3 — Devinette
+Je suis un animal, je dis "miaou".
+MOT = l’animal (minuscule)
+NOMBRE = 7
+FORMAT: mot_nombre!`,
+      hint: `MOT = chat`,
+      answer: `chat_7!`
+    },
+    {
+      prompt:
+`Niveau 4 — Dossier (OSINT fun)
+Nom: Samir
+Pseudo gaming: "AtlasRider"
+MOT = premier mot du pseudo (minuscule)
+NOMBRE = nombre de voyelles dans ce mot
+FORMAT: mot_nombre!`,
+      hint: `MOT = atlas (voyelles: a,a)`,
+      answer: `atlas_2!`
+    },
+    {
+      prompt:
+`Niveau 5 — Devinette
+Je suis un fruit jaune, courbé, que les singes adorent.
+MOT = fruit (minuscule)
+NOMBRE = nombre de lettres du MOT
+FORMAT: mot_nombre!`,
+      hint: `MOT = banane`,
+      answer: `banane_6!`
+    },
+    {
+      prompt:
+`Niveau 6 — Dossier (réseaux sociaux)
+Prénom: Sara
+Bio: "Coffee • Code • Chill"
+MOT = boisson (minuscule)
+NOMBRE = 1 (un seul café avant le cours)
+FORMAT: mot_nombre!`,
+      hint: `MOT = coffee (en français ici: "cafe")`,
+      answer: `cafe_1!`
+    },
+    {
+      prompt:
+`Niveau 7 — Devinette
+Je suis le contraire de "jour".
+MOT = contraire (minuscule)
+NOMBRE = 4
+FORMAT: mot_nombre!`,
+      hint: `MOT = nuit`,
+      answer: `nuit_4!`
+    },
+    {
+      prompt:
+`Niveau 8 — Dossier (sport)
+Prénom: Yassine
+Équipe: Barça
+MOT = nom court de l’équipe (minuscule, sans accents)
+NOMBRE = nombre de lettres du MOT
+FORMAT: mot_nombre!`,
+      hint: `MOT = barca`,
+      answer: `barca_5!`
+    },
+    {
+      prompt:
+`Niveau 9 — Devinette (cyber fun)
+Je protège les comptes, je suis souvent à 6 chiffres.
+MOT = moi (minuscule, sans espaces)
+NOMBRE = 6
+FORMAT: mot_nombre!`,
+      hint: `MOT = otp`,
+      answer: `otp_6!`
+    },
+    {
+      prompt:
+`Niveau 10 — Dossier (musique)
+Prénom: Amine
+Chanson préférée: "Believer"
+MOT = titre de la chanson (minuscule)
+NOMBRE = nombre de syllabes approximatif: 3
+FORMAT: mot_nombre!`,
+      hint: `MOT = believer`,
+      answer: `believer_3!`
+    },
+    {
+      prompt:
+`Niveau 11 — Devinette (logique)
+Je suis un nombre, je viens après 7.
+MOT = écriture en lettres (minuscule)
+NOMBRE = 8
+FORMAT: mot_nombre!`,
+      hint: `MOT = huit`,
+      answer: `huit_8!`
+    },
+    {
+      prompt:
+`Niveau 12 — Dossier (club info)
+Nom du club: Cybotics
+MOT = nom du club en minuscule
+NOMBRE = nombre de lettres du MOT
+FORMAT: mot_nombre!`,
+      hint: `cybotics = 8 lettres`,
+      answer: `cybotics_8!`
+    },
+    {
+      prompt:
+`Niveau 13 — Devinette
+Je suis un endroit où on achète du pain.
+MOT = endroit (minuscule)
+NOMBRE = nombre de lettres du MOT
+FORMAT: mot_nombre!`,
+      hint: `MOT = boulangerie`,
+      answer: `boulangerie_11!`
+    },
+    {
+      prompt:
+`Niveau 14 — Dossier (étudiante)
+Prénom: Nada
+Mot préféré: "Smile"
+MOT = mot préféré en minuscule
+NOMBRE = 3 (car elle met 3 emojis 😄😄😄)
+FORMAT: mot_nombre!`,
+      hint: `MOT = smile`,
+      answer: `smile_3!`
+    },
+    {
+      prompt:
+`Niveau 15 — Devinette (un peu plus dur)
+Je suis un animal qui porte sa maison sur son dos.
+MOT = animal (minuscule)
+NOMBRE = nombre de lettres du MOT
+FORMAT: mot_nombre!`,
+      hint: `MOT = tortue`,
+      answer: `tortue_6!`
+    },
+    {
+      prompt:
+`Niveau 16 — Dossier (password patterns)
+Indice: Beaucoup de gens mettent "admin" dans les tests…
+MOT = mot très utilisé en test (minuscule)
+NOMBRE = 1
+FORMAT: mot_nombre!`,
+      hint: `MOT = admin`,
+      answer: `admin_1!`
+    },
+    {
+      prompt:
+`Niveau 17 — Devinette (tech)
+Je suis un langage web qui s’exécute dans le navigateur (souvent).
+MOT = langage (minuscule, sans points)
+NOMBRE = 2
+FORMAT: mot_nombre!`,
+      hint: `MOT = javascript`,
+      answer: `javascript_2!`
+    },
+    {
+      prompt:
+`Niveau 18 — Dossier (voyage)
+Prénom: Salma
+Destination rêve: Alaska
+MOT = destination en minuscule
+NOMBRE = nombre de lettres du MOT
+FORMAT: mot_nombre!`,
+      hint: `MOT = alaska`,
+      answer: `alaska_6!`
+    },
+    {
+      prompt:
+`Niveau 19 — Devinette (piège simple)
+J’ai 3 côtés.
+MOT = forme (minuscule)
+NOMBRE = 3
+FORMAT: mot_nombre!`,
+      hint: `MOT = triangle`,
+      answer: `triangle_3!`
+    },
+    {
+      prompt:
+`Niveau 20 — Finale (mélange)
+Phrase: "No pain, no gain"
+MOT = dernier mot de la phrase (minuscule)
+NOMBRE = nombre de lettres du MOT
+FORMAT: mot_nombre!`,
+      hint: `Dernier mot = gain`,
+      answer: `gain_4!`
+    }
+  ];
+
+  // =========================
+  // UI refs
+  // =========================
+  const lockCard = document.getElementById("lockCard");
+  const gameCard = document.getElementById("gameCard");
+  const winCard  = document.getElementById("winCard");
+
+  const qBadge = document.getElementById("qBadge");
+  const timerBadge = document.getElementById("timerBadge");
+  const clockBadge = document.getElementById("clockBadge");
+  const countdownEl = document.getElementById("countdown");
+
+  const promptEl = document.getElementById("prompt");
+  const pwEl = document.getElementById("pw");
+  const btnEl = document.getElementById("btn");
+  const skipBtnEl = document.getElementById("skipBtn");
+  const msgEl = document.getElementById("msg");
+
+  const hintBox = document.getElementById("hintBox");
+  const hintText = document.getElementById("hintText");
+
+  const winCodeEl = document.getElementById("winCode");
+  const barEl = document.getElementById("bar");
+
+  function pad(n){ return String(n).padStart(2,"0"); }
+  function setBad(t){ msgEl.className="badge bad"; msgEl.textContent=t; }
+  function setOk(t){ msgEl.className="badge ok"; msgEl.textContent=t; }
+  function setInfo(t){ msgEl.className="badge muted"; msgEl.textContent=t; }
+
+  function todayStartLocal(){
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), now.getDate(), START_HOUR, START_MIN, 0, 0);
+  }
+
+  function formatMMSS(ms){
+    const s = Math.max(0, Math.ceil(ms/1000));
+    const mm = Math.floor(s/60);
+    const ss = s%60;
+    return `${pad(mm)}:${pad(ss)}`;
+  }
+
+  function generateWinCode(qIndex){
+    const now = new Date();
+    const t = `${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+    const rand = Math.random().toString(36).slice(2,6).toUpperCase();
+    return `Q${qIndex+1}-${t}-${rand}`;
+  }
+
+  // =========================
+  // Game state
+  // =========================
+  let qIndex = 0;
+  let qStart = 0;
+  let hintShown = false;
+
+  const WIN_KEY = "guess_pw_win_code_v2";
+  const alreadyWon = localStorage.getItem(WIN_KEY);
+
+  if (alreadyWon) {
+    lockCard.style.display="none";
+    gameCard.style.display="none";
+    winCard.style.display="block";
+    winCodeEl.textContent = alreadyWon;
+  }
+
+  function loadQuestion(i){
+    qIndex = i;
+    const q = QUESTIONS[qIndex];
+    promptEl.textContent = q.prompt;
+    qBadge.textContent = `Question ${qIndex+1}/20`;
+    pwEl.value = "";
+    pwEl.focus();
+    setInfo("Essais illimités. Sois rapide.");
+    hintShown = false;
+    hintBox.style.display = "none";
+    qStart = Date.now();
+  }
+
+  function showHintOnce(){
+    if (hintShown) return;
+    hintShown = true;
+    hintText.textContent = QUESTIONS[qIndex].hint;
+    hintBox.style.display = "inline-block";
+  }
+
+  function nextQuestion(){
+    if (qIndex >= 19) {
+      setOk("Fin des 20 questions. (Les organisateurs peuvent relancer en changeant les questions.)");
+      btnEl.disabled = true;
+      skipBtnEl.disabled = true;
+      return;
+    }
+    loadQuestion(qIndex+1);
+  }
+
+  function checkPassword(){
+    const entered = (pwEl.value || "").trim();
+    if (!entered) return setBad("Entre quelque chose 🙂");
+
+    const ans = QUESTIONS[qIndex].answer;
+    if (entered === ans) {
+      const code = generateWinCode(qIndex);
+      localStorage.setItem(WIN_KEY, code);
+
+      gameCard.style.display = "none";
+      winCard.style.display  = "block";
+      winCodeEl.textContent  = code;
+      return;
+    }
+    setBad("❌ Mauvais mot de passe. Réessaie vite !");
+    pwEl.select();
+  }
+
+  btnEl.addEventListener("click", checkPassword);
+  pwEl.addEventListener("keydown", (e)=>{ if(e.key==="Enter") checkPassword(); });
+  skipBtnEl.addEventListener("click", nextQuestion);
+
+  // =========================
+  // Gate + main loop
+  // =========================
+  function openGame(){
+    lockCard.style.display="none";
+    gameCard.style.display="block";
+    loadQuestion(0);
+  }
+
+  function tick(){
+    const now = new Date();
+    clockBadge.textContent = `🕒 ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+
+    if (alreadyWon) return;
+
+    const start = todayStartLocal();
+    const diff = start - now;
+
+    if (diff > 0) {
+      countdownEl.textContent = `Ouverture dans ${formatMMSS(diff)}`;
+      return;
+    } else {
+      if (gameCard.style.display === "none" && winCard.style.display === "none") openGame();
+    }
+
+    const elapsed = Date.now() - qStart;
+    const remaining = Math.max(0, AUTO_SKIP_MS - elapsed);
+
+    timerBadge.textContent = `⏳ ${formatMMSS(remaining)}`;
+
+    const pct = Math.min(100, (elapsed / AUTO_SKIP_MS) * 100);
+    barEl.style.width = pct + "%";
+
+    if (elapsed >= HINT_AFTER_MS) showHintOnce();
+    if (elapsed >= AUTO_SKIP_MS) nextQuestion();
+  }
+
+  setInterval(tick, TICK_MS);
+  tick();
+</script>
+</body>
+</html>
