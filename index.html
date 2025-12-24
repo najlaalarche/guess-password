@@ -4,295 +4,418 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Guess The Password – Speed (20 Questions)</title>
-
 <style>
-body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;margin:0;background:#0b1220;color:#e8eefc}
-.wrap{max-width:900px;margin:auto;padding:18px}
-.card{background:#121c33;border:1px solid #223154;border-radius:16px;padding:16px;margin:12px 0}
-.h1{font-size:22px;font-weight:900}
-.h2{font-size:16px;font-weight:800}
-.muted{opacity:.8}
-.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-input{flex:1;padding:12px;border-radius:12px;border:1px solid #2a3b66;background:#0b1220;color:#e8eefc;font-size:16px}
-button{padding:12px 14px;border-radius:12px;border:0;background:#2b6cff;color:white;font-weight:800;font-size:16px}
-.badge{padding:6px 10px;border-radius:999px;border:1px solid #2a3b66;background:#0b1220;font-size:13px}
-.bad{background:#2a1111;border-color:#b13a3a}
-.ok{background:#0c2a16;border-color:#1f7a43}
-.warn{background:#2a250f;border-color:#caa43a}
-.mono{font-family:monospace}
-.progress{height:10px;border-radius:999px;background:#0b1220;border:1px solid #2a3b66;overflow:hidden}
-.bar{height:100%;width:0%;background:#2b6cff}
-.bigwin{font-size:30px;font-weight:900}
-pre{white-space:pre-wrap;line-height:1.35}
+  body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;margin:0;background:#0b1220;color:#e8eefc}
+  .wrap{max-width:900px;margin:auto;padding:18px}
+  .card{background:#121c33;border:1px solid #223154;border-radius:16px;padding:16px;margin:12px 0}
+  .h1{font-size:22px;font-weight:900}
+  .h2{font-size:16px;font-weight:800}
+  .muted{opacity:.8}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  input{flex:1;padding:12px;border-radius:12px;border:1px solid #2a3b66;background:#0b1220;color:#e8eefc;font-size:16px}
+  button{padding:12px 14px;border-radius:12px;border:0;background:#2b6cff;color:white;font-weight:800;font-size:16px;cursor:pointer}
+  button:disabled{opacity:.55;cursor:not-allowed}
+  .badge{padding:6px 10px;border-radius:999px;border:1px solid #2a3b66;background:#0b1220;font-size:13px;display:inline-block}
+  .bad{background:#2a1111;border-color:#b13a3a}
+  .ok{background:#0c2a16;border-color:#1f7a43}
+  .warn{background:#2a250f;border-color:#caa43a}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
+  .progress{height:10px;border-radius:999px;background:#0b1220;border:1px solid #2a3b66;overflow:hidden}
+  .bar{height:100%;width:0%;background:#2b6cff}
+  .bigwin{font-size:30px;font-weight:900}
+  pre{white-space:pre-wrap;line-height:1.35;margin:0}
+  .small{font-size:12px;opacity:.75}
 </style>
 </head>
 
 <body>
 <div class="wrap">
 
-<div class="card">
-  <div class="h1">🔐 Guess The Password – Speed Challenge</div>
-  <div class="muted">
-    Essais illimités • Indice après 1 min • Passage auto après 2 min • Validation au stand
-  </div>
-  <div class="row" style="margin-top:10px">
-    <span class="badge" id="qBadge">Question 1/20</span>
-    <span class="badge" id="timer">⏳ 02:00</span>
-    <span class="badge mono">FORMAT: mot_minuscule_nombre!</span>
-  </div>
-</div>
-
-<div class="card" id="game">
-  <div class="h2">📄 Dossier / Devinette</div>
-  <pre id="prompt"></pre>
-
-  <div class="progress"><div class="bar" id="bar"></div></div>
-
-  <div class="row" style="margin-top:10px">
-    <input id="pw" placeholder="ex: mama_2005!" autocomplete="off"/>
-    <button onclick="check()">TESTER</button>
+  <div class="card">
+    <div class="h1">🔐 Guess The Password – Speed Challenge</div>
+    <div class="muted">Essais illimités • Indice après 40s • Passage auto après 60s • Validation au stand</div>
+    <div class="row" style="margin-top:10px">
+      <span class="badge" id="qBadge">Question 1/20</span>
+      <span class="badge" id="timerBadge">⏳ 01:00</span>
+      <span class="badge mono">FORMAT: mot_minuscule_nombre!</span>
+    </div>
+    <div class="small" style="margin-top:8px">
+      Rappel format: <span class="mono">mot</span> (sans espaces, minuscule) + "_" + <span class="mono">nombre</span> + "!"
+    </div>
   </div>
 
-  <div id="msg" class="badge muted" style="margin-top:10px">Essais illimités</div>
-  <div id="hintBox" class="badge warn" style="display:none;margin-top:10px">
-    💡 Indice : <span id="hint"></span>
-  </div>
-</div>
+  <div class="card" id="gameCard">
+    <div class="h2">📄 Dossier / Devinette</div>
+    <pre id="prompt"></pre>
 
-<div class="card" id="win" style="display:none">
-  <div class="bigwin">✅ ACCESS GRANTED</div>
-  <p>Montre ce code au stand :</p>
-  <div class="badge ok mono" id="code"></div>
-</div>
+    <div style="margin-top:10px" class="progress"><div class="bar" id="bar"></div></div>
+
+    <div class="row" style="margin-top:10px">
+      <input id="pw" placeholder="ex: mama_2001!" autocomplete="off"/>
+      <button id="btn">TESTER</button>
+      <button id="skipBtn" style="background:#44506b">PASSER</button>
+    </div>
+
+    <div id="msg" class="badge muted" style="margin-top:10px">Essais illimités. Essaie des combinaisons probables.</div>
+    <div id="hintBox" class="badge warn" style="display:none;margin-top:10px">
+      💡 Indice : <span id="hintText"></span>
+    </div>
+  </div>
+
+  <div class="card" id="winCard" style="display:none">
+    <div class="bigwin">✅ ACCESS GRANTED</div>
+    <div class="muted" style="margin-top:6px">Va vite au stand et montre ce code :</div>
+    <div class="badge ok mono" id="winCode" style="margin-top:10px"></div>
+  </div>
 
 </div>
 
 <script>
-const HINT=60000, NEXT=120000;
+  // =========================
+  // TIMING (TES DEMANDES)
+  // =========================
+  const HINT_AFTER_MS = 40_000;  // 40 secondes
+  const AUTO_SKIP_MS  = 60_000;  // 1 minute
 
-/* ===== QUESTIONS (OSINT + DEVINETTES) ===== */
-const Q=[
-{
-q:`SIMO – Profil personnel
+  // =========================
+  // QUESTIONS (20) – bios + devinettes (plus fun/realiste)
+  // FORMAT: mot_minuscule_nombre!
+  // =========================
+  const QUESTIONS = [
+    { prompt:
+`Q1 — SIMO (profil)
 Simo est né en 2001.
-Il est très proche de sa mère, qu’il appelle souvent "mama".
-Il utilise toujours le même mot simple + un chiffre important pour lui.
+Il est très proche de sa mère, qu’il appelle “mama”.
+Il met souvent une info affective + son année.
 
-Quel est le mot de passe le PLUS PROBABLE ?`,
-h:`Il mélange affection + année`,
-a:`mama_2001!`
-},
-{
-q:`AYA – Réseaux sociaux
+Mot de passe probable ?`,
+      hint:`Mot = mama, nombre = 2001`,
+      answer:`mama_2001!`
+    },
+    { prompt:
+`Q2 — AYA (bio)
 Aya adore la photographie.
-Sa première caméra s’appelait "canon".
-Elle dit que ce chiffre lui porte chance : 7.
+Sa première caméra: Canon.
+Son chiffre fétiche: 7.
 
 Mot de passe probable ?`,
-h:`objet préféré + chiffre fétiche`,
-a:`canon_7!`
-},
-{
-q:`DEVINETTE
-Je suis quelque chose que tu fais tous les jours,
-mais jamais de la même façon.
-Je commence par "m".
-
-Mot + nombre de lettres`,
-h:`activité quotidienne`,
-a:`manger_6!`
-},
-{
-q:`YOUSSEF – Étudiant
-Youssef est passionné de football.
-Son idole est Messi.
-Il ajoute toujours le numéro de son joueur préféré.
-
-Mot de passe probable ?`,
-h:`nom du joueur + numéro`,
-a:`messi_10!`
-},
-{
-q:`DEVINETTE
+      hint:`objet + chiffre`,
+      answer:`canon_7!`
+    },
+    { prompt:
+`Q3 — Devinette
 Je suis toujours devant toi,
 mais tu ne peux jamais me rattraper.
 
-Mot + lettres`,
-h:`concept abstrait`,
-a:`avenir_6!`
-},
-{
-q:`SARA – Profil simple
-Sara n’aime pas compliquer ses mots de passe.
-Elle utilise son prénom + son âge actuel (22).
+Mot = réponse, Nombre = lettres`,
+      hint:`concept du temps`,
+      answer:`avenir_6!`
+    },
+    { prompt:
+`Q4 — YOUSSEF (football)
+Youssef est fan de Messi.
+Il ajoute le numéro du joueur.
 
-Mot de passe ?`,
-h:`prénom + âge`,
-a:`sara_22!`
-},
-{
-q:`DEVINETTE
-Plus tu en prends, plus tu en laisses derrière toi.
+Mot = joueur, Nombre = numéro`,
+      hint:`Messi = 10`,
+      answer:`messi_10!`
+    },
+    { prompt:
+`Q5 — Devinette
+Je parle sans bouche,
+et j’entends sans oreilles.
 
-Mot + lettres`,
-h:`pense au sol`,
-a:`pas_3!`
-},
-{
-q:`HAMZA – Gamer
-Pseudo : DarkWolf
-Il garde toujours la partie "wolf".
+Mot = réponse, Nombre = lettres`,
+      hint:`phénomène sonore`,
+      answer:`echo_4!`
+    },
+    { prompt:
+`Q6 — SARA (simple)
+Sara utilise son prénom + son âge (22).
+
+Mot = sara, Nombre = 22`,
+      hint:`prénom + âge`,
+      answer:`sara_22!`
+    },
+    { prompt:
+`Q7 — Bio (famille)
+Hicham appelle son père “baba”.
+Il met souvent ce mot + son jour de naissance: 15.
+
+Mot de passe probable ?`,
+      hint:`mot affectif + 15`,
+      answer:`baba_15!`
+    },
+    { prompt:
+`Q8 — Devinette
+Plus tu en prends,
+plus tu en laisses derrière toi.
+
+Mot = réponse, Nombre = lettres`,
+      hint:`sur le sol`,
+      answer:`pas_3!`
+    },
+    { prompt:
+`Q9 — HAMZA (gamer)
+Pseudo: DarkWolf
+Il garde “wolf”.
 Nombre = lettres du mot.
 
 Mot de passe ?`,
-h:`animal`,
-a:`wolf_4!`
-},
-{
-q:`DEVINETTE
+      hint:`wolf = 4 lettres`,
+      answer:`wolf_4!`
+    },
+    { prompt:
+`Q10 — Devinette
 Je monte mais je ne descends jamais.
 
-Mot + lettres`,
-h:`temps`,
-a:`age_3!`
-},
-{
-q:`IMANE – Bio perso
-Imane adore la couleur bleue.
-C’est la première couleur qu’elle met partout.
+Mot = réponse, Nombre = lettres`,
+      hint:`lié au temps`,
+      answer:`age_3!`
+    },
+    { prompt:
+`Q11 — IMANE (couleur)
+Imane met sa couleur favorite dans tout: bleu.
+Nombre = lettres.
 
 Mot de passe probable ?`,
-h:`couleur en minuscule`,
-a:`bleu_4!`
-},
-{
-q:`DEVINETTE
-Je parle sans bouche et j’entends sans oreilles.
+      hint:`bleu = 4`,
+      answer:`bleu_4!`
+    },
+    { prompt:
+`Q12 — Bio (animal)
+Lina a un chat qui s’appelle Luna.
+Âge du chat: 3.
 
-Mot + lettres`,
-h:`phénomène`,
-a:`echo_4!`
-},
-{
-q:`ANAS – Étudiant
-Anas utilise toujours son surnom "nono".
-Il ajoute 1 car "numéro un".
-
-Mot de passe ?`,
-h:`surnom`,
-a:`nono_1!`
-},
-{
-q:`DEVINETTE
+Mot = luna, Nombre = 3`,
+      hint:`nom du chat + âge`,
+      answer:`luna_3!`
+    },
+    { prompt:
+`Q13 — Devinette
 Je suis léger comme une plume,
 mais personne ne peut me tenir longtemps.
 
-Mot + lettres`,
-h:`respiration`,
-a:`souffle_7!`
-},
-{
-q:`SALMA – Profil
-Salma aime voyager.
-Son rêve est le Japon.
-Elle écrit toujours le pays + nombre de lettres.
+Mot = réponse, Nombre = lettres`,
+      hint:`respiration`,
+      answer:`souffle_7!`
+    },
+    { prompt:
+`Q14 — SALMA (voyage)
+Destination rêvée: Japon
+Nombre = lettres
 
-Mot de passe ?`,
-h:`destination`,
-a:`japon_5!`
-},
-{
-q:`DEVINETTE
+Mot de passe probable ?`,
+      hint:`japon = 5`,
+      answer:`japon_5!`
+    },
+    { prompt:
+`Q15 — Devinette
 Je suis cassé sans être tenu.
 
-Mot + lettres`,
-h:`promesse`,
-a:`secret_6!`
-},
-{
-q:`OMAR – Simple
-Omar met toujours "admin" quand il teste.
-Il ajoute 1.
+Mot = réponse, Nombre = lettres`,
+      hint:`on le garde`,
+      answer:`secret_6!`
+    },
+    { prompt:
+`Q16 — OMAR (tests)
+Omar met souvent “admin” quand il teste.
+Nombre = 1.
+
+Mot de passe probable ?`,
+      hint:`admin + 1`,
+      answer:`admin_1!`
+    },
+    { prompt:
+`Q17 — Devinette (tech)
+Je n’ai pas de vie, mais je peux mourir.
+On me recharge.
+
+Mot = réponse, Nombre = lettres`,
+      hint:`téléphone`,
+      answer:`batterie_8!`
+    },
+    { prompt:
+`Q18 — Bio (food)
+Nadia adore les tacos.
+Elle met “tacos” + 2 (elle en prend 2 😄).
 
 Mot de passe ?`,
-h:`mot très courant`,
-a:`admin_1!`
-},
-{
-q:`DEVINETTE
-Je n’ai pas de vie,
-mais je peux mourir.
-
-Mot + lettres`,
-h:`tech`,
-a:`batterie_8!`
-},
-{
-q:`LINA – Affectif
-Lina a un chat appelé Luna.
-Elle met toujours le nom + âge du chat (3).
-
-Mot de passe ?`,
-h:`animal`,
-a:`luna_3!`
-},
-{
-q:`DEVINETTE
+      hint:`tacos + 2`,
+      answer:`tacos_2!`
+    },
+    { prompt:
+`Q19 — Devinette
 Je suis plein de trous,
 mais je retiens l’eau.
 
-Mot + lettres`,
-h:`objet`,
-a:`eponge_6!`
-},
-{
-q:`FINALE
-Phrase préférée :
-"Never give up"
+Mot = réponse, Nombre = lettres`,
+      hint:`cuisine`,
+      answer:`eponge_6!`
+    },
+    { prompt:
+`Q20 — Finale (phrase)
+Phrase préférée: "Never give up"
+Mot = dernier mot, Nombre = lettres`,
+      hint:`dernier mot = up`,
+      answer:`up_2!`
+    }
+  ];
 
-Mot = dernier mot
-Nombre = lettres`,
-h:`mot anglais`,
-a:`up_2!`
-}
-];
+  // =========================
+  // UI refs
+  // =========================
+  const qBadge = document.getElementById("qBadge");
+  const timerBadge = document.getElementById("timerBadge");
+  const promptEl = document.getElementById("prompt");
+  const pwEl = document.getElementById("pw");
+  const btnEl = document.getElementById("btn");
+  const skipBtnEl = document.getElementById("skipBtn");
+  const msgEl = document.getElementById("msg");
+  const hintBox = document.getElementById("hintBox");
+  const hintText = document.getElementById("hintText");
+  const barEl = document.getElementById("bar");
+  const winCard = document.getElementById("winCard");
+  const gameCard = document.getElementById("gameCard");
+  const winCodeEl = document.getElementById("winCode");
 
-let i=0,start=Date.now(),hint=false;
+  function pad(n){ return String(n).padStart(2,"0"); }
+  function setBad(t){ msgEl.className="badge bad"; msgEl.textContent=t; }
+  function setInfo(t){ msgEl.className="badge muted"; msgEl.textContent=t; }
 
-const prompt=document.getElementById("prompt");
-const qBadge=document.getElementById("qBadge");
-const timer=document.getElementById("timer");
-const bar=document.getElementById("bar");
-const hintBox=document.getElementById("hintBox");
-const hintT=document.getElementById("hint");
-const win=document.getElementById("win");
-const game=document.getElementById("game");
-const code=document.getElementById("code");
-
-function load(){
-  prompt.textContent=Q[i].q;
-  qBadge.textContent=`Question ${i+1}/20`;
-  start=Date.now(); hint=false;
-  hintBox.style.display="none";
-}
-load();
-
-function check(){
-  if(document.getElementById("pw").value.trim()===Q[i].a){
-    game.style.display="none";
-    win.style.display="block";
-    code.textContent=`Q${i+1}-${Math.random().toString(36).slice(2,7).toUpperCase()}`;
+  function formatMMSS(ms){
+    const s = Math.max(0, Math.ceil(ms/1000));
+    const mm = Math.floor(s/60);
+    const ss = s%60;
+    return `${pad(mm)}:${pad(ss)}`;
   }
-}
 
-setInterval(()=>{
-  let e=Date.now()-start;
-  let r=Math.max(0,120000-e);
-  timer.textContent=`⏳ ${Math.floor(r/60000)}:${String(Math.floor(r/1000)%60).padStart(2,"0")}`;
-  bar.style.width=Math.min(100,e/1200)+"%";
-  if(e>60000&&!hint){hint=true;hintBox.style.display="block";hintT.textContent=Q[i].h;}
-  if(e>120000){i++; if(i<20) load();}
-},200);
+  // =========================
+  // Game state + robust timers
+  // =========================
+  let qIndex = 0;
+  let qStart = 0;
+  let hintShown = false;
+  let hintTimeout = null;
+  let skipTimeout = null;
+
+  const WIN_KEY = "guess_pw_win_code_v5";
+
+  // If already won on this device, show WIN screen
+  const alreadyWon = localStorage.getItem(WIN_KEY);
+  if (alreadyWon) {
+    gameCard.style.display = "none";
+    winCard.style.display = "block";
+    winCodeEl.textContent = alreadyWon;
+  }
+
+  function clearTimers(){
+    if (hintTimeout) { clearTimeout(hintTimeout); hintTimeout = null; }
+    if (skipTimeout) { clearTimeout(skipTimeout); skipTimeout = null; }
+  }
+
+  function showHintOnce(){
+    if (hintShown) return;
+    hintShown = true;
+    hintText.textContent = QUESTIONS[qIndex].hint;
+    hintBox.style.display = "inline-block";
+  }
+
+  function scheduleTimers(){
+    clearTimers();
+    hintTimeout = setTimeout(() => {
+      if (!localStorage.getItem(WIN_KEY)) showHintOnce();
+    }, HINT_AFTER_MS);
+
+    skipTimeout = setTimeout(() => {
+      if (!localStorage.getItem(WIN_KEY)) nextQuestion();
+    }, AUTO_SKIP_MS);
+  }
+
+  function loadQuestion(i){
+    qIndex = i;
+    const q = QUESTIONS[qIndex];
+    promptEl.textContent = q.prompt;
+    qBadge.textContent = `Question ${qIndex+1}/20`;
+    pwEl.value = "";
+    pwEl.focus();
+
+    hintShown = false;
+    hintBox.style.display = "none";
+    setInfo("Essais illimités. Indice à 40s.");
+
+    qStart = Date.now();
+    scheduleTimers();
+  }
+
+  function nextQuestion(){
+    clearTimers();
+    if (qIndex >= QUESTIONS.length - 1) {
+      setInfo("Fin des 20 questions.");
+      btnEl.disabled = true;
+      skipBtnEl.disabled = true;
+      return;
+    }
+    loadQuestion(qIndex + 1);
+  }
+
+  function generateWinCode(){
+    const now = new Date();
+    const t = `${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+    const rand = Math.random().toString(36).slice(2,6).toUpperCase();
+    return `Q${qIndex+1}-${t}-${rand}`;
+  }
+
+  function checkPassword(){
+    const entered = (pwEl.value || "").trim();
+    if (!entered) return setBad("Entre une tentative 🙂");
+
+    const ans = QUESTIONS[qIndex].answer;
+    if (entered === ans) {
+      const code = generateWinCode();
+      localStorage.setItem(WIN_KEY, code);
+
+      clearTimers();
+      gameCard.style.display = "none";
+      winCard.style.display = "block";
+      winCodeEl.textContent = code;
+      return;
+    }
+    setBad("❌ Pas encore. Essaie une autre combinaison !");
+    pwEl.select();
+  }
+
+  btnEl.addEventListener("click", checkPassword);
+  pwEl.addEventListener("keydown", (e)=>{ if(e.key==="Enter") checkPassword(); });
+  skipBtnEl.addEventListener("click", nextQuestion);
+
+  // Display loop (visual only, actions handled by timeouts)
+  function tick(){
+    if (localStorage.getItem(WIN_KEY)) return;
+
+    const elapsed = Date.now() - qStart;
+    const remaining = Math.max(0, AUTO_SKIP_MS - elapsed);
+
+    timerBadge.textContent = `⏳ ${formatMMSS(remaining)}`;
+    barEl.style.width = Math.min(100, (elapsed / AUTO_SKIP_MS) * 100) + "%";
+
+    // Visual catch-up
+    if (!hintShown && elapsed >= HINT_AFTER_MS) showHintOnce();
+    if (elapsed >= AUTO_SKIP_MS) nextQuestion(); // fallback safety
+  }
+  setInterval(tick, 200);
+
+  // Catch-up when returning to tab/app
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible" && !localStorage.getItem(WIN_KEY)) {
+      const elapsed = Date.now() - qStart;
+      if (elapsed >= AUTO_SKIP_MS) nextQuestion();
+      else if (elapsed >= HINT_AFTER_MS && !hintShown) showHintOnce();
+    }
+  });
+
+  // Start
+  if (!alreadyWon) loadQuestion(0);
 </script>
 </body>
 </html>
