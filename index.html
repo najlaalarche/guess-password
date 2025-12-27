@@ -83,86 +83,154 @@
   // ========= Questions fictives (bios + devinettes) =========
   // IMPORTANT: profils fictifs, pour le jeu uniquement.
   const QUESTIONS = [
-    { prompt:`Q1 — Bio (Simo)
-Né en 2001. Il écrit souvent “family first”.
-Il met un mot simple + son année.
-Devine le plus probable.`, hint:`mot lié à family`, answer:`family_2001!` },
+  { prompt:`Q1 — Lghz
+Chnahya l fakiha li kan liha iktichaf l jadibiya?
+Jawb b kalma wa7da (darija).`,
+    hint:`machi tfa7`,
+    answer:`karmouss` },
 
-    { prompt:`Q2 — Bio (Aya)
-Photo: elle dit “lens”, jamais “photo”.
-Chiffre fétiche: 13.`, hint:`lens + 13`, answer:`lens_13!` },
+  { prompt:`Q2 — Bio (Aya)
+Aya kat7eb ttsswir.
+Ma katgoulch "photo", katgoul ghir "lens".
+Ra9m li kay3jebha: 20-4/2+5-10.
+Chno password?`,
+    hint:`lens + 13`,
+    answer:`lens13` },
 
-    { prompt:`Q3 — Devinette
-Je suis devant toi, tu ne peux jamais me rattraper.
-Mot + lettres.`, hint:`temps`, answer:`avenir_6!` },
+  { prompt:`Q3 — Lghz
+Ana dayman 9damk,
+w 3omrek ma t9der tl79ni.
+Kalma + 3dad dyal 7rouf li fiha.`,
+    hint:`mertabt b lwa9t`,
+    answer:`avenir4` },
 
-    { prompt:`Q4 — Bio (Youssef)
-Fan de foot. Il écrit “goat” + 10.`, hint:`goat + 10`, answer:`goat_10!` },
+  { prompt:`Q4 — Bio (Youssef)
+Youssef m9awd f l kora.
+Kaygoul "goat" l rassou b7al nickname.
+taymooooot 3la messi.
+Chno password?`,
+    hint:`goat + nmra d messi`,
+    answer:`goat10` },
 
-    { prompt:`Q5 — Devinette
-Plus je sèche, plus je deviens mouillée.
-Mot + lettres.`, hint:`objet maison`, answer:`serviette_9!` },
+  { prompt:`Q5 — Lghz
+Ktr ma kanwli nashf,
+ktr kanwli mbllel.
+Kalma + 3dad dyal 7rouf li fiha.`,
+    hint:`7aja f ddar`,
+    answer:`serviette9` },
 
-    { prompt:`Q6 — Bio (Sara)
-Elle met son “mood”: calm.
-Nombre = 22.`, hint:`calm + 22`, answer:`calm_22!` },
+  { prompt:`Q6 — Bio (Sara)
+Sara ma kat3a9edch l password.
+Katst3mel smy dl9et dyalha dyalha: 9et b anglais.
+3omrha 22.
+Chno password?`,
+    hint:`22 + smiya dl9et`,
+    answer:`22cat` },
 
-    { prompt:`Q7 — Bio (Hicham)
-Chien: Rocky (2 ans).
-Il met le nom + âge.`, hint:`rocky + 2`, answer:`rocky_2!` },
+  { prompt:`Q7 — Bio (Hicham)
+Hicham 3ando kelb smiyto Rocky.
+3omro 2 snin.
+Kaydir smiya + l3omr.
+Chno password?`,
+    hint:`rocky + 2`,
+    answer:`rocky2` },
 
-    { prompt:`Q8 — Devinette
-Je peux te sauver ou te trahir, je suis fait de lettres/chiffres.
-Mot + lettres.`, hint:`thème du jeu`, answer:`password_8!` },
+  { prompt:`Q8 — Lghz
+N9der n7mik w n9der n3ks 3lik.
+Ana mtkawen mn 7rouf w a3dad.
+Kalma + 3dad dyal 7rouf.`,
+    hint:`hada howa mowdou3 l3ba`,
+    answer:`password8` },
 
-    { prompt:`Q9 — Bio (Hamza)
-Pseudo: DarkWolf mais il préfère “shadow”.
-Nombre = 4.`, hint:`shadow + 4`, answer:`shadow_4!` },
+  { prompt:`Q9 — Bio (Hamza)
+Pseudo dyalo DarkWolf,
+bssa7 kayfaddel yst3mel "shadow".
+Ra9m li kay7ebbo: 4.
+Chno password?`,
+    hint:`shadow + 4`,
+    answer:`shadow4` },
 
-    { prompt:`Q10 — Devinette
-Tu m’as quand tu n’as plus rien à dire.
-Mot + lettres.`, hint:`absence de bruit`, answer:`silence_7!` },
+  { prompt:`Q10 — Lghz
+Katb9a 3andek
+mlli ma kayb9a 7ta klam.
+Kalma b frc + 3dad dyal 7rouf li fiha .`,
+    hint:`bla sda3, bla ssout`,
+    answer:`silence7` },
 
-    { prompt:`Q11 — Bio (Imane)
-Couleur préférée: bleu, mais elle écrit “ocean”.
-Nombre = 4.`, hint:`ocean + 4`, answer:`ocean_4!` },
+  { prompt:`Q11 — Bio (Imane)
+Imane kat7eb lzra9,
+katkteb "ocean" f bzzaf d lplaces.
+3dad dyal 7rouf: 4.
+Chno password?`,
+    hint:`ocean + 4`,
+    answer:`ocean4` },
 
-    { prompt:`Q12 — Bio (Lina)
-Chat “Luna”, surnom “moon”.
-Âge = 3.`, hint:`moon + 3`, answer:`moon_3!` },
+  { prompt:`Q12 — Bio (Lina)
+Lina 3andha 9ett smiyto Luna,
+bssa7 kat3ayyto b "moon".
+3omro 3 snin.
+Chno password?`,
+    hint:`moon + 3`,
+    answer:`moon3` },
 
-    { prompt:`Q13 — Devinette
-Je grandis quand on me partage.
-Mot + lettres.`, hint:`émotion`, answer:`joie_4!` },
+  { prompt:`Q13 — Lghz
+Ana kan kber
+mlli kat9ssemni m3a nass.
+Kalma + 3dad dyal 7rouf.`,
+    hint:`7ssassa, mashi chi haja maddiya`,
+    answer:`fr7a` },
 
-    { prompt:`Q14 — Bio (Salma)
-Destination: Tokyo (pas Japon).
-Nombre = 5.`, hint:`tokyo + 5`, answer:`tokyo_5!` },
+  { prompt:`Q14 — Bio (Salma)
+Salma kat7lem tmchi l Tokyo,
+ma katktebch Japan.
+3dad dyal 7rouf: 5.
+Chno password?`,
+    hint:`tokyo + 5`,
+    answer:`tokyo5` },
 
-    { prompt:`Q15 — Devinette
-Invisible mais je peux te suivre partout (en ligne).
-Mot + lettres.`, hint:`trace`, answer:`trace_5!` },
+  { prompt:`Q15 — Lghz
+Ma kanbanch,
+walakin kan tb3ek f internet.
+Kalma b frc + 3dad dyal 7rouf li fiha.`,
+    hint:`katkhalli athar`,
+    answer:`trace5` },
 
-    { prompt:`Q16 — Bio (Omar)
-Il met souvent “root”.
-Nombre = 1.`, hint:`root + 1`, answer:`root_1!` },
+  { prompt:`Q16 — Bio (Omar)
+Omar f tests dyalo
+kaydir dayman root.
+Kayzid ra9m 1.
+Chno password?`,
+    hint:`root + 1`,
+    answer:`root1` },
 
-    { prompt:`Q17 — Devinette
-Je suis à 2 facteurs, souvent 6 chiffres.
-Mot = ?, Nombre = 6.`, hint:`OTP`, answer:`otp_6!` },
+  { prompt:`Q17 — Lghz (tech)
+Ana dyal 2 factors,
+ghaliban 6 a3dad.
+Kalma = ?, 3dad = 6.`,
+    hint:`OTP`,
+    answer:`otp6` },
 
-    { prompt:`Q18 — Bio (Nadia)
-Elle écrit “taco” (sans s).
-Nombre = 2.`, hint:`taco + 2`, answer:`taco_2!` },
+  { prompt:`Q18 — Bio (Nadia)
+Nadia kat7eb tacos,
+katkteb taco bla s.
+Katakol 2.
+Chno password?`,
+    hint:`taco + 2`,
+    answer:`taco_2!` },
 
-    { prompt:`Q19 — Devinette
-La chose la plus cassée sur un téléphone.
-Mot + lettres.`, hint:`écran`, answer:`ecran_5!` },
+  { prompt:`Q19 — Lghz
+Aktr haja kattsra3 f telephone.
+Kalma + 3dad dyal 7rouf dyalha.`,
+    hint:`kattsra3 w katbdel`,
+    answer:`ecran` },
 
-    { prompt:`Q20 — Finale
-Phrase: “Never give up”
-Mot = dernier mot, Nombre = lettres.`, hint:`up`, answer:`up_2!` },
-  ];
+  { prompt:`Q20 — Finale
+Jomla: "Never give up"
+Kalma = akher kalma,
+3dad = dyal 7rouf.`,
+    hint:`akher kalma howa up`,
+    answer:`up2` },
+];
 
   // ========= UI =========
   const qBadge = document.getElementById("qBadge");
@@ -343,3 +411,4 @@ Mot = dernier mot, Nombre = lettres.`, hint:`up`, answer:`up_2!` },
 </script>
 </body>
 </html>
+
